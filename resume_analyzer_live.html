@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Career Fit Analyzer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 1000px;
+            width: 100%;
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .content {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 30px;
+            padding: 40px;
+        }
+
+        @media (max-width: 768px) {
+            .content {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .left-section {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .career-selection {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 12px;
+        }
+
+        .career-selection label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        .career-buttons {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+
+        .career-btn {
+            padding: 12px;
+            border: 2px solid #ddd;
+            background: white;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            color: #333;
+        }
+
+        .career-btn:hover {
+            border-color: #667eea;
+            background: #f0f4ff;
+        }
+
+        .career-btn.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-color: #667eea;
+        }
+
+        .upload-area {
+            border: 3px dashed #667eea;
+            border-radius: 12px;
+            padding: 40px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: #f8f9fa;
+        }
+
+        .upload-area:hover {
+            background: #f0f4ff;
+            border-color: #764ba2;
+        }
+
+        .upload-area.dragover {
+            background: #e8ebff;
+            border-color: #764ba2;
+        }
+
+        .upload-area h3 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .upload-area p {
+            color: #666;
+            margin-bottom: 5px;
+        }
+
+        .upload-area small {
+            color: #999;
+        }
+
+        #fileInput {
+            display: none;
+        }
+
+        .file-info {
+            background: #d4edda;
+            color: #155724;
+            padding: 12px;
+            border-radius: 8px;
+            margin-top: 15px;
+            display: none;
+        }
+
+        .file-info.show {
+            display: block;
+        }
+
+        .analyze-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 20px;
+        }
+
+        .analyze-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .analyze-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .right-section {
+            background: #f8f9fa;
+            padding: 30px;
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .results {
+            display: none;
+        }
+
+        .results.show {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .fit-score-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 12px;
+            text-align: center;
+        }
+
+        .fit-score-number {
+            font-size: 3em;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .fit-score-label {
+            font-size: 0.9em;
+            opacity: 0.9;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 4px;
+            margin-top: 15px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 4px;
+            transition: width 0.5s ease;
+        }
+
+        .skills-card {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            border-left: 4px solid #28a745;
+        }
+
+        .skills-card h3 {
+            color: #28a745;
+            font-size: 0.9em;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .skills-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .skill-tag {
+            background: #d4edda;
+            color: #155724;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: 500;
+        }
+
+        .missing-card {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            border-left: 4px solid #ffc107;
+        }
+
+        .missing-card h3 {
+            color: #ffc107;
+            font-size: 0.9em;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .missing-tag {
+            background: #fff3cd;
+            color: #856404;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: 500;
+        }
+
+        .recommendations {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            font-size: 0.9em;
+            line-height: 1.6;
+            color: #333;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .loading.show {
+            display: block;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #f5c6cb;
+            display: none;
+        }
+
+        .error.show {
+            display: block;
+        }
+
+        .empty-state {
+            text-align: center;
+            color: #999;
+            padding: 30px 20px;
+        }
+
+        .empty-state p {
+            font-size: 0.95em;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 Career Fit Analyzer</h1>
+            <p>Upload your resume and discover your fit for your target industry</p>
+        </div>
+
+        <div class="content">
+            <!-- Left Section: Upload & Input -->
+            <div class="left-section">
+                <!-- Career Selection -->
+                <div class="career-selection">
+                    <label>Select Target Career Path</label>
+                    <div class="career-buttons">
+                        <button class="career-btn active" onclick="selectCareer('Software Engineer')">Software Engineer</button>
+                        <button class="career-btn" onclick="selectCareer('Data Scientist')">Data Scientist</button>
+                        <button class="career-btn" onclick="selectCareer('Frontend Developer')">Frontend Developer</button>
+                        <button class="career-btn" onclick="selectCareer('Backend Developer')">Backend Developer</button>
+                        <button class="career-btn" onclick="selectCareer('DevOps Engineer')">DevOps Engineer</button>
+                        <button class="career-btn" onclick="selectCareer('AI/ML Engineer')">AI/ML Engineer</button>
+                        <button class="career-btn" onclick="selectCareer('Product Manager')">Product Manager</button>
+                        <button class="career-btn" onclick="selectCareer('UX Designer')">UX Designer</button>
+                    </div>
+                </div>
+
+                <!-- File Upload -->
+                <div class="upload-area" id="uploadArea" onclick="document.getElementById('fileInput').click()">
+                    <h3>📄 Drop your resume here</h3>
+                    <p>or click to browse</p>
+                    <small>Supports PDF, DOCX, and TXT files</small>
+                    <input type="file" id="fileInput" accept=".pdf,.doc,.docx,.txt" onchange="handleFileSelect(event)">
+                    <div class="file-info" id="fileInfo">
+                        ✅ <span id="fileName"></span>
+                    </div>
+                </div>
+
+                <!-- Error Message -->
+                <div class="error" id="errorMsg"></div>
+
+                <!-- Analyze Button -->
+                <button class="analyze-btn" id="analyzeBtn" onclick="analyzeResume()" disabled>Analyze My Resume</button>
+
+                <!-- Loading -->
+                <div class="loading" id="loading">
+                    <div class="spinner"></div>
+                    <p>Analyzing your resume...</p>
+                </div>
+            </div>
+
+            <!-- Right Section: Results -->
+            <div class="right-section">
+                <div class="results" id="results">
+                    <!-- Fit Score -->
+                    <div class="fit-score-card">
+                        <div class="fit-score-label">Overall Fit Score</div>
+                        <div class="fit-score-number" id="fitScore">--</div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="progressFill"></div>
+                        </div>
+                    </div>
+
+                    <!-- Matching Skills -->
+                    <div class="skills-card" id="matchingSkillsCard">
+                        <h3>✅ Matching Skills</h3>
+                        <div class="skills-list" id="matchingSkillsList"></div>
+                    </div>
+
+                    <!-- Missing Skills -->
+                    <div class="missing-card" id="missingSkillsCard">
+                        <h3>📌 Skills to Improve</h3>
+                        <div class="skills-list" id="missingSkillsList"></div>
+                    </div>
+
+                    <!-- Recommendations -->
+                    <div class="recommendations" id="recommendationsText"></div>
+                </div>
+
+                <!-- Empty State -->
+                <div class="empty-state" id="emptyState">
+                    <p>Upload a resume and click "Analyze" to see your career fit assessment</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let selectedFile = null;
+        let selectedCareer = "Software Engineer";
+        const API_URL = "https://career-fit.onrender.com";
+
+        // File Selection
+        const uploadArea = document.getElementById("uploadArea");
+        const fileInput = document.getElementById("fileInput");
+
+        uploadArea.addEventListener("dragover", (e) => {
+            e.preventDefault();
+            uploadArea.classList.add("dragover");
+        });
+
+        uploadArea.addEventListener("dragleave", () => {
+            uploadArea.classList.remove("dragover");
+        });
+
+        uploadArea.addEventListener("drop", (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove("dragover");
+            if (e.dataTransfer.files.length > 0) {
+                handleFileSelect({ target: { files: e.dataTransfer.files } });
+            }
+        });
+
+        function handleFileSelect(event) {
+            const file = event.target.files[0];
+            if (file) {
+                selectedFile = file;
+                document.getElementById("fileName").textContent = file.name;
+                document.getElementById("fileInfo").classList.add("show");
+                document.getElementById("analyzeBtn").disabled = false;
+                clearError();
+            }
+        }
+
+        function selectCareer(career) {
+            selectedCareer = career;
+            document.querySelectorAll(".career-btn").forEach(btn => {
+                btn.classList.remove("active");
+            });
+            event.target.classList.add("active");
+        }
+
+        function clearError() {
+            const errorMsg = document.getElementById("errorMsg");
+            errorMsg.classList.remove("show");
+        }
+
+        function showError(message) {
+            const errorMsg = document.getElementById("errorMsg");
+            errorMsg.textContent = "❌ " + message;
+            errorMsg.classList.add("show");
+        }
+
+        async function analyzeResume() {
+            if (!selectedFile) {
+                showError("Please upload a resume first");
+                return;
+            }
+
+            clearError();
+            document.getElementById("loading").classList.add("show");
+            document.getElementById("results").classList.remove("show");
+            document.getElementById("emptyState").classList.add("hide");
+
+            try {
+                const formData = new FormData();
+                formData.append("file", selectedFile);
+                formData.append("career_path", selectedCareer);
+
+                const response = await fetch(`${API_URL}/analyze-resume`, {
+                    method: "POST",
+                    body: formData,
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.detail || "Failed to analyze resume");
+                }
+
+                const data = await response.json();
+                displayResults(data);
+            } catch (error) {
+                showError(error.message || "Error analyzing resume. Make sure your backend is running on " + API_URL);
+            } finally {
+                document.getElementById("loading").classList.remove("show");
+            }
+        }
+
+        function displayResults(data) {
+            // Fit Score
+            const fitPercentage = Math.round(data.fit_score * 100);
+            document.getElementById("fitScore").textContent = fitPercentage + "%";
+            document.getElementById("progressFill").style.width = fitPercentage + "%";
+
+            // Matching Skills
+            const matchingList = document.getElementById("matchingSkillsList");
+            matchingList.innerHTML = "";
+            if (data.matching_skills && data.matching_skills.length > 0) {
+                data.matching_skills.forEach(skill => {
+                    const tag = document.createElement("span");
+                    tag.className = "skill-tag";
+                    tag.textContent = skill;
+                    matchingList.appendChild(tag);
+                });
+            } else {
+                matchingList.innerHTML = "<p style='color: #999;'>No matching skills found</p>";
+            }
+
+            // Missing Skills
+            const missingList = document.getElementById("missingSkillsList");
+            missingList.innerHTML = "";
+            if (data.missing_skills && data.missing_skills.length > 0) {
+                data.missing_skills.forEach(skill => {
+                    const tag = document.createElement("span");
+                    tag.className = "missing-tag";
+                    tag.textContent = skill;
+                    missingList.appendChild(tag);
+                });
+            } else {
+                missingList.innerHTML = "<p style='color: #999;'>All skills matched!</p>";
+            }
+
+            // Recommendations
+            const recommendationsText = document.getElementById("recommendationsText");
+            recommendationsText.innerHTML = data.recommendations.replace(/\n/g, "<br>");
+
+            // Show Results
+            document.getElementById("results").classList.add("show");
+            document.getElementById("emptyState").style.display = "none";
+        }
+    </script>
+</body>
+</html>
